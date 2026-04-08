@@ -24,13 +24,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		06A7129A2F6595000094C7BA /* GolfX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GolfX.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		06A712A72F6595030094C7BA /* GolfXTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GolfXTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		06A712B12F6595030094C7BA /* GolfXUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GolfXUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		06A7129A2F6595000094C7BA /* FairwayLab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FairwayLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		06A712A72F6595030094C7BA /* FairwayLabTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FairwayLabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		06A712B12F6595030094C7BA /* FairwayLabUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FairwayLabUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		06AEEAE72F6887B6007915CB /* Exceptions for "GolfX" folder in "GolfX" target */ = {
+		06AEEAE72F6887B6007915CB /* Exceptions for "FairwayLab" folder in "FairwayLab" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -39,9 +39,9 @@
 				TestsSkinsCalculatorTests.swift,
 				TestsStablefordCalculatorTests.swift,
 			);
-			target = 06A712992F6595000094C7BA /* GolfX */;
+			target = 06A712992F6595000094C7BA /* FairwayLab */;
 		};
-		06AEEAEC2F6887B8007915CB /* Exceptions for "GolfX" folder in "GolfXTests" target */ = {
+		06AEEAEC2F6887B8007915CB /* Exceptions for "FairwayLab" folder in "FairwayLabTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				TestsHandicapCalculatorTests.swift,
@@ -49,28 +49,28 @@
 				TestsSkinsCalculatorTests.swift,
 				TestsStablefordCalculatorTests.swift,
 			);
-			target = 06A712A62F6595030094C7BA /* GolfXTests */;
+			target = 06A712A62F6595030094C7BA /* FairwayLabTests */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		06A7129C2F6595000094C7BA /* GolfX */ = {
+		06A7129C2F6595000094C7BA /* FairwayLab */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				06AEEAE72F6887B6007915CB /* Exceptions for "GolfX" folder in "GolfX" target */,
-				06AEEAEC2F6887B8007915CB /* Exceptions for "GolfX" folder in "GolfXTests" target */,
+				06AEEAE72F6887B6007915CB /* Exceptions for "FairwayLab" folder in "FairwayLab" target */,
+				06AEEAEC2F6887B8007915CB /* Exceptions for "FairwayLab" folder in "FairwayLabTests" target */,
 			);
-			path = GolfX;
+			path = FairwayLab;
 			sourceTree = "<group>";
 		};
-		06A712AA2F6595030094C7BA /* GolfXTests */ = {
+		06A712AA2F6595030094C7BA /* FairwayLabTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GolfXTests;
+			path = FairwayLabTests;
 			sourceTree = "<group>";
 		};
-		06A712B42F6595030094C7BA /* GolfXUITests */ = {
+		06A712B42F6595030094C7BA /* FairwayLabUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GolfXUITests;
+			path = FairwayLabUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -103,9 +103,9 @@
 		06A712912F6595000094C7BA = {
 			isa = PBXGroup;
 			children = (
-				06A7129C2F6595000094C7BA /* GolfX */,
-				06A712AA2F6595030094C7BA /* GolfXTests */,
-				06A712B42F6595030094C7BA /* GolfXUITests */,
+				06A7129C2F6595000094C7BA /* FairwayLab */,
+				06A712AA2F6595030094C7BA /* FairwayLabTests */,
+				06A712B42F6595030094C7BA /* FairwayLabUITests */,
 				06A7129B2F6595000094C7BA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,9 +113,9 @@
 		06A7129B2F6595000094C7BA /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				06A7129A2F6595000094C7BA /* GolfX.app */,
-				06A712A72F6595030094C7BA /* GolfXTests.xctest */,
-				06A712B12F6595030094C7BA /* GolfXUITests.xctest */,
+				06A7129A2F6595000094C7BA /* FairwayLab.app */,
+				06A712A72F6595030094C7BA /* FairwayLabTests.xctest */,
+				06A712B12F6595030094C7BA /* FairwayLabUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,9 +123,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		06A712992F6595000094C7BA /* GolfX */ = {
+		06A712992F6595000094C7BA /* FairwayLab */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 06A712BB2F6595030094C7BA /* Build configuration list for PBXNativeTarget "GolfX" */;
+			buildConfigurationList = 06A712BB2F6595030094C7BA /* Build configuration list for PBXNativeTarget "FairwayLab" */;
 			buildPhases = (
 				06A712962F6595000094C7BA /* Sources */,
 				06A712972F6595000094C7BA /* Frameworks */,
@@ -136,18 +136,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				06A7129C2F6595000094C7BA /* GolfX */,
+				06A7129C2F6595000094C7BA /* FairwayLab */,
 			);
-			name = GolfX;
+			name = FairwayLab;
 			packageProductDependencies = (
 			);
 			productName = GolfX;
-			productReference = 06A7129A2F6595000094C7BA /* GolfX.app */;
+			productReference = 06A7129A2F6595000094C7BA /* FairwayLab.app */;
 			productType = "com.apple.product-type.application";
 		};
-		06A712A62F6595030094C7BA /* GolfXTests */ = {
+		06A712A62F6595030094C7BA /* FairwayLabTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 06A712BE2F6595030094C7BA /* Build configuration list for PBXNativeTarget "GolfXTests" */;
+			buildConfigurationList = 06A712BE2F6595030094C7BA /* Build configuration list for PBXNativeTarget "FairwayLabTests" */;
 			buildPhases = (
 				06A712A32F6595030094C7BA /* Sources */,
 				06A712A42F6595030094C7BA /* Frameworks */,
@@ -159,18 +159,18 @@
 				06A712A92F6595030094C7BA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				06A712AA2F6595030094C7BA /* GolfXTests */,
+				06A712AA2F6595030094C7BA /* FairwayLabTests */,
 			);
-			name = GolfXTests;
+			name = FairwayLabTests;
 			packageProductDependencies = (
 			);
 			productName = GolfXTests;
-			productReference = 06A712A72F6595030094C7BA /* GolfXTests.xctest */;
+			productReference = 06A712A72F6595030094C7BA /* FairwayLabTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		06A712B02F6595030094C7BA /* GolfXUITests */ = {
+		06A712B02F6595030094C7BA /* FairwayLabUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 06A712C12F6595030094C7BA /* Build configuration list for PBXNativeTarget "GolfXUITests" */;
+			buildConfigurationList = 06A712C12F6595030094C7BA /* Build configuration list for PBXNativeTarget "FairwayLabUITests" */;
 			buildPhases = (
 				06A712AD2F6595030094C7BA /* Sources */,
 				06A712AE2F6595030094C7BA /* Frameworks */,
@@ -182,13 +182,13 @@
 				06A712B32F6595030094C7BA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				06A712B42F6595030094C7BA /* GolfXUITests */,
+				06A712B42F6595030094C7BA /* FairwayLabUITests */,
 			);
-			name = GolfXUITests;
+			name = FairwayLabUITests;
 			packageProductDependencies = (
 			);
 			productName = GolfXUITests;
-			productReference = 06A712B12F6595030094C7BA /* GolfXUITests.xctest */;
+			productReference = 06A712B12F6595030094C7BA /* FairwayLabUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -214,7 +214,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 06A712952F6595000094C7BA /* Build configuration list for PBXProject "GolfX" */;
+			buildConfigurationList = 06A712952F6595000094C7BA /* Build configuration list for PBXProject "FairwayLab" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -228,9 +228,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				06A712992F6595000094C7BA /* GolfX */,
-				06A712A62F6595030094C7BA /* GolfXTests */,
-				06A712B02F6595030094C7BA /* GolfXUITests */,
+				06A712992F6595000094C7BA /* FairwayLab */,
+				06A712A62F6595030094C7BA /* FairwayLabTests */,
+				06A712B02F6595030094C7BA /* FairwayLabUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -286,12 +286,12 @@
 /* Begin PBXTargetDependency section */
 		06A712A92F6595030094C7BA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 06A712992F6595000094C7BA /* GolfX */;
+			target = 06A712992F6595000094C7BA /* FairwayLab */;
 			targetProxy = 06A712A82F6595030094C7BA /* PBXContainerItemProxy */;
 		};
 		06A712B32F6595030094C7BA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 06A712992F6595000094C7BA /* GolfX */;
+			target = 06A712992F6595000094C7BA /* FairwayLab */;
 			targetProxy = 06A712B22F6595030094C7BA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -430,7 +430,7 @@
 				DEVELOPMENT_TEAM = TTTJAH2NMX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GolfX/Info.plist;
+				INFOPLIST_FILE = FairwayLab/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FairwayLab;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -446,7 +446,7 @@
 				NEW_SETTING = "";
 				NEW_SETTING1 = "";
 				NEW_SETTING2 = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.genaroarismendi.GolfX;
+				PRODUCT_BUNDLE_IDENTIFIER = com.genaroarismendi.FairwayLab;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -468,7 +468,7 @@
 				DEVELOPMENT_TEAM = TTTJAH2NMX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GolfX/Info.plist;
+				INFOPLIST_FILE = FairwayLab/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FairwayLab;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -484,7 +484,7 @@
 				NEW_SETTING = "";
 				NEW_SETTING1 = "";
 				NEW_SETTING2 = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.genaroarismendi.GolfX;
+				PRODUCT_BUNDLE_IDENTIFIER = com.genaroarismendi.FairwayLab;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -514,7 +514,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GolfX.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GolfX";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FairwayLab.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FairwayLab";
 			};
 			name = Debug;
 		};
@@ -536,7 +536,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GolfX.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GolfX";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FairwayLab.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FairwayLab";
 			};
 			name = Release;
 		};
@@ -583,7 +583,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		06A712952F6595000094C7BA /* Build configuration list for PBXProject "GolfX" */ = {
+		06A712952F6595000094C7BA /* Build configuration list for PBXProject "FairwayLab" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				06A712B92F6595030094C7BA /* Debug */,
@@ -592,7 +592,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		06A712BB2F6595030094C7BA /* Build configuration list for PBXNativeTarget "GolfX" */ = {
+		06A712BB2F6595030094C7BA /* Build configuration list for PBXNativeTarget "FairwayLab" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				06A712BC2F6595030094C7BA /* Debug */,
@@ -601,7 +601,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		06A712BE2F6595030094C7BA /* Build configuration list for PBXNativeTarget "GolfXTests" */ = {
+		06A712BE2F6595030094C7BA /* Build configuration list for PBXNativeTarget "FairwayLabTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				06A712BF2F6595030094C7BA /* Debug */,
@@ -610,7 +610,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		06A712C12F6595030094C7BA /* Build configuration list for PBXNativeTarget "GolfXUITests" */ = {
+		06A712C12F6595030094C7BA /* Build configuration list for PBXNativeTarget "FairwayLabUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				06A712C22F6595030094C7BA /* Debug */,
