@@ -4,4 +4,13 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:CLEANUP_GUIDE.md">
+   </FileRef>
+   <FileRef
+      location = "group:SIMPLE_TARGET_GUIDE.md">
+   </FileRef>
+   <FileRef
+      location = "group:VISUAL_REFERENCE.md">
+   </FileRef>
 </Workspace>

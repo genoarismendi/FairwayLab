@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- ============================================ -->
+    <!-- BASIC APP INFORMATION -->
+    <!-- ============================================ -->
+    
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    
+    <key>CFBundleDisplayName</key>
+    <string>FairwayLab</string>
+    
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    
+    <!-- ============================================ -->
+    <!-- APP ICON CONFIGURATION (⭐ THIS FIXES ERROR 90713) -->
+    <!-- ============================================ -->
+    
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    
+    <!-- This tells iOS to look for an asset named "AppIcon" -->
+    <!-- in your Assets.xcassets for all app icon images -->
+    
+    <!-- ============================================ -->
+    <!-- UI CONFIGURATION -->
+    <!-- ============================================ -->
+    
+    <key>UILaunchScreen</key>
+    <dict/>
+    
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <true/>
+    </dict>
+    
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- GOLF API KEY (IF YOU NEED IT) -->
+    <!-- ============================================ -->
+    
+    <key>GOLF_API_KEY</key>
+    <string>LLOACD7TDCZ66UQVAOQFUWHRLM</string>
+    
+    <!-- ============================================ -->
+    <!-- PRIVACY & PERMISSIONS (Add as needed) -->
+    <!-- ============================================ -->
+    
+    <!-- Uncomment if you use location services -->
+    <!--
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>FairwayLab needs your location to find nearby golf courses.</string>
+    -->
+    
+    <!-- Uncomment if you access camera -->
+    <!--
+    <key>NSCameraUsageDescription</key>
+    <string>FairwayLab would like to access your camera to take photos of your round.</string>
+    -->
+    
+    <!-- Uncomment if you access photo library -->
+    <!--
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>FairwayLab would like to access your photos to share your scorecard.</string>
+    -->
+    
+</dict>
+</plist>

@@ -2,23 +2,18 @@
 //  ContentView.swift
 //  GolfX
 //
-//  Created by g on 14-03-26.
+//  Legacy file - now replaced by HomeView
 //
 
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        HomeView()
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
 }

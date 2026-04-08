@@ -5,13 +5,14 @@
 //  Created by g on 14-03-26.
 //
 
-import Testing
+import XCTest
 @testable import GolfX
 
-struct GolfXTests {
+final class GolfXTests: XCTestCase {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    func testExample() async throws {
+        // Write your test here and use APIs like `XCTAssert(...)` to check expected conditions.
+        XCTAssert(true, "Example test passes")
     }
 
 }

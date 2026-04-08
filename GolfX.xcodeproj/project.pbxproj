@@ -29,9 +29,37 @@
 		06A712B12F6595030094C7BA /* GolfXUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GolfXUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		06AEEAE72F6887B6007915CB /* Exceptions for "GolfX" folder in "GolfX" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				TestsHandicapCalculatorTests.swift,
+				TestsHoleBuilderTests.swift,
+				TestsSkinsCalculatorTests.swift,
+				TestsStablefordCalculatorTests.swift,
+			);
+			target = 06A712992F6595000094C7BA /* GolfX */;
+		};
+		06AEEAEC2F6887B8007915CB /* Exceptions for "GolfX" folder in "GolfXTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				TestsHandicapCalculatorTests.swift,
+				TestsHoleBuilderTests.swift,
+				TestsSkinsCalculatorTests.swift,
+				TestsStablefordCalculatorTests.swift,
+			);
+			target = 06A712A62F6595030094C7BA /* GolfXTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		06A7129C2F6595000094C7BA /* GolfX */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				06AEEAE72F6887B6007915CB /* Exceptions for "GolfX" folder in "GolfX" target */,
+				06AEEAEC2F6887B8007915CB /* Exceptions for "GolfX" folder in "GolfXTests" target */,
+			);
 			path = GolfX;
 			sourceTree = "<group>";
 		};
@@ -171,7 +199,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2630;
-				LastUpgradeCheck = 2630;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					06A712992F6595000094C7BA = {
 						CreatedOnToolsVersion = 26.3;
@@ -328,6 +356,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -385,6 +414,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -400,6 +430,9 @@
 				DEVELOPMENT_TEAM = TTTJAH2NMX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GolfX/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FairwayLab;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -410,7 +443,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.comegen.GolfX;
+				NEW_SETTING = "";
+				NEW_SETTING1 = "";
+				NEW_SETTING2 = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.genaroarismendi.GolfX;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -432,6 +468,9 @@
 				DEVELOPMENT_TEAM = TTTJAH2NMX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GolfX/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FairwayLab;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -442,7 +481,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.comegen.GolfX;
+				NEW_SETTING = "";
+				NEW_SETTING1 = "";
+				NEW_SETTING2 = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.genaroarismendi.GolfX;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
