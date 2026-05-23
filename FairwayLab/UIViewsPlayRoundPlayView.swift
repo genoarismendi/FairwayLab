@@ -112,6 +112,7 @@ struct RoundPlayView: View {
     
     private func commitState() {
         appState.roundState = localState
+        appState.forceSave()  // Explicitly save after committing scores
     }
 }
 
@@ -127,49 +128,79 @@ struct HoleEntrySection: View {
     var body: some View {
         VStack(spacing: 12) {
             ForEach(Array(players.enumerated()), id: \.element.id) { playerIndex, player in
-                HStack {
-                    Text(player.name)
-                        .frame(width: 100, alignment: .leading)
-                    
-                    Spacer()
-                    
-                    // Strokes
-                    TextField("Strokes", value: Binding(
-                        get: { state.getGrossScore(for: player.id, holeID: hole.id) },
-                        set: { state.setGrossScore($0, for: player.id, holeID: hole.id) }
-                    ), format: .number)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 60)
-                    .multilineTextAlignment(.center)
-                    .focused(focusedField, equals: "strokes-\(hole.id)-\(player.id)")
-                    .id("strokes-\(hole.id)-\(player.id)")
-                    .submitLabel(.next)
-                    .onSubmit {
-                        // Tab key pressed - move to putts
-                        DispatchQueue.main.async {
-                            focusedField.wrappedValue = "putts-\(hole.id)-\(player.id)"
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(player.name)
+                            .font(.headline)
+                        
+                        // Show snake emoji if player currently has most putts
+                        if state.getCurrentSnakeHolder() == player.id {
+                            Text("🐍")
+                                .font(.title3)
+                        }
+                        
+                        // Show pig emojis based on par performance
+                        if !state.madeParOnNine(playerID: player.id, isBackNine: false) {
+                            Text("🐷")
+                                .font(.title3)
+                        }
+                        if !state.madeParOnNine(playerID: player.id, isBackNine: true) && allHoles.contains(where: { $0.actualHoleNumber >= 10 }) {
+                            Text("🐷")
+                                .font(.title3)
                         }
                     }
                     
-                    // Putts
-                    TextField("Putts", value: Binding(
-                        get: { state.getPutts(for: player.id, holeID: hole.id) },
-                        set: { state.setPutts($0, for: player.id, holeID: hole.id) }
-                    ), format: .number)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 60)
-                    .multilineTextAlignment(.center)
-                    .focused(focusedField, equals: "putts-\(hole.id)-\(player.id)")
-                    .id("putts-\(hole.id)-\(player.id)")
-                    .submitLabel(.next)
-                    .onSubmit {
-                        // Tab key pressed - move to next player or hole
-                        DispatchQueue.main.async {
-                            moveToNextField(fromPlayerIndex: playerIndex)
+                    HStack(spacing: 15) {
+                        // Strokes Picker
+                        VStack(spacing: 4) {
+                            Text("Strokes")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            Picker("Strokes", selection: Binding(
+                                get: { state.getGrossScore(for: player.id, holeID: hole.id) ?? 0 },
+                                set: { newValue in
+                                    state.setGrossScore(newValue == 0 ? nil : newValue, for: player.id, holeID: hole.id)
+                                }
+                            )) {
+                                Text("-").tag(0)
+                                ForEach(1...15, id: \.self) { stroke in
+                                    Text("\(stroke)").tag(stroke)
+                                }
+                            }
+                            .pickerStyle(.wheel)
+                            .frame(width: 80, height: 100)
+                            .clipped()
+                        }
+                        
+                        // Putts Picker
+                        VStack(spacing: 4) {
+                            Text("Putts")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            Picker("Putts", selection: Binding(
+                                get: { state.getPutts(for: player.id, holeID: hole.id) ?? 0 },
+                                set: { newValue in
+                                    state.setPutts(newValue == 0 ? nil : newValue, for: player.id, holeID: hole.id)
+                                }
+                            )) {
+                                Text("-").tag(0)
+                                ForEach(0...8, id: \.self) { putt in
+                                    Text("\(putt)").tag(putt)
+                                }
+                            }
+                            .pickerStyle(.wheel)
+                            .frame(width: 60, height: 100)
+                            .clipped()
                         }
                     }
+                    .padding(.vertical, 4)
+                }
+                .padding(.vertical, 8)
+                
+                if playerIndex < players.count - 1 {
+                    Divider()
                 }
             }
             
@@ -195,22 +226,6 @@ struct HoleEntrySection: View {
             }
         }
         .padding(.vertical, 8)
-    }
-    
-    private func moveToNextField(fromPlayerIndex: Int) {
-        if fromPlayerIndex < players.count - 1 {
-            // Move to next player's strokes
-            let nextPlayer = players[fromPlayerIndex + 1]
-            focusedField.wrappedValue = "strokes-\(hole.id)-\(nextPlayer.id)"
-        } else if holeIndex < totalHoles - 1 {
-            // Move to next hole, first player
-            let nextHole = allHoles[holeIndex + 1]
-            let firstPlayer = players[0]
-            focusedField.wrappedValue = "strokes-\(nextHole.id)-\(firstPlayer.id)"
-        } else {
-            // Last field - unfocus
-            focusedField.wrappedValue = nil
-        }
     }
 }
 

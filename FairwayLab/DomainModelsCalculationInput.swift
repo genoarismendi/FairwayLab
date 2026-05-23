@@ -12,6 +12,7 @@ struct CalculationInput {
     let holes: [HoleDefinition]
     let handicapMode: HandicapMode
     let scores: [UUID: [UUID: Int]]  // playerID -> holeID -> grossStrokes
+    let putts: [UUID: [UUID: Int]]   // playerID -> holeID -> putts
     let kpWinners: [UUID: UUID?]     // holeID -> playerID?
     
     struct PlayerHoleScore {
@@ -37,6 +38,16 @@ struct CalculationInput {
     /// Get KP winner for a hole
     func kpWinner(holeID: UUID) -> UUID? {
         kpWinners[holeID] ?? nil
+    }
+    
+    /// Get putts for a specific player and hole
+    func puttCount(playerID: UUID, holeID: UUID) -> Int? {
+        putts[playerID]?[holeID]
+    }
+    
+    /// Get all putts for a player
+    func puttsForPlayer(_ playerID: UUID) -> [UUID: Int] {
+        putts[playerID] ?? [:]
     }
     
     /// Get all player-hole combinations with scores

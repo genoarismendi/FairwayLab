@@ -26,6 +26,18 @@ struct CalculationInputMapper {
             scores[player.id] = playerScores
         }
         
+        // Extract all putts
+        var putts: [UUID: [UUID: Int]] = [:]
+        for player in definition.players {
+            var playerPutts: [UUID: Int] = [:]
+            for hole in definition.holes {
+                if let puttCount = state.getPutts(for: player.id, holeID: hole.id) {
+                    playerPutts[hole.id] = puttCount
+                }
+            }
+            putts[player.id] = playerPutts
+        }
+        
         // Extract KP winners
         var kpWinners: [UUID: UUID?] = [:]
         for hole in definition.holes where hole.isPar3 {
@@ -37,6 +49,7 @@ struct CalculationInputMapper {
             holes: definition.holes,
             handicapMode: definition.handicapMode,
             scores: scores,
+            putts: putts,
             kpWinners: kpWinners
         )
     }

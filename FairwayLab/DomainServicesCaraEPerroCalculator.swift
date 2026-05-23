@@ -14,14 +14,21 @@ import Foundation
 struct CaraEPerroHoleResult: Codable {
     let hole: HoleDefinition
     let playerGrossScores: [UUID: Int]
+    let playerPutts: [UUID: Int]  // Putts per player on this hole
     let playerHolePoints: [UUID: Int]  // Points earned on this hole (can be negative)
     let playerCumulativePoints: [UUID: Int]  // Running total up to and including this hole
+    let playerCumulativePutts: [UUID: Int]  // Running putt total up to and including this hole
+    let snakeHolder: UUID?  // Player currently holding the snake (most putts)
 }
 
 struct CaraEPerroResult: Codable {
     let playerCumulativePoints: [UUID: Int]  // Final cumulative points
     let holeResults: [CaraEPerroHoleResult]
     let playerHandicapIndices: [UUID: Int]  // Original handicap indices
+    let playerTotalPutts: [UUID: Int]  // Total putts for entire round
+    let finalSnakeHolder: UUID?  // Player with most putts at end
+    let frontNineWinner: UUID?  // Winner of front nine (net score)
+    let backNineWinner: UUID?  // Winner of back nine (net score)
     
     func totalPoints(for playerID: UUID) -> Int {
         playerCumulativePoints[playerID] ?? 0
@@ -51,6 +58,11 @@ struct CaraEPerroCalculator {
         
         var holeResults: [CaraEPerroHoleResult] = []
         var cumulativePoints: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
+        var cumulativePutts: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
+        
+        // Separate holes into front nine and back nine
+        let frontNineHoles = input.holes.filter { $0.actualHoleNumber <= 9 }
+        let backNineHoles = input.holes.filter { $0.actualHoleNumber >= 10 }
         
         // Process each hole
         for hole in input.holes.sorted(by: { $0.displayOrder < $1.displayOrder }) {
@@ -62,31 +74,79 @@ struct CaraEPerroCalculator {
                 handicapDeltas: handicapDeltas
             )
             
-            // Update cumulative points
-            for playerID in holePoints.keys {
-                cumulativePoints[playerID, default: 0] += holePoints[playerID] ?? 0
-            }
-            
-            // Get gross scores for this hole
+            // Get gross scores and putts for this hole
             var grossScores: [UUID: Int] = [:]
+            var holePutts: [UUID: Int] = [:]
+            
             for player in input.players {
                 if let score = input.score(playerID: player.id, holeID: hole.id), score > 0 {
                     grossScores[player.id] = score
                 }
+                if let putts = input.puttCount(playerID: player.id, holeID: hole.id), putts >= 0 {
+                    holePutts[player.id] = putts
+                    cumulativePutts[player.id, default: 0] += putts
+                }
             }
+            
+            // Add bonus point for zero putts
+            var bonusPoints = holePoints
+            for player in input.players {
+                if let putts = holePutts[player.id], putts == 0 {
+                    bonusPoints[player.id, default: 0] += 1
+                }
+            }
+            
+            // Update cumulative points
+            for playerID in bonusPoints.keys {
+                cumulativePoints[playerID, default: 0] += bonusPoints[playerID] ?? 0
+            }
+            
+            // Determine current snake holder (player with most putts so far)
+            let snakeHolder = cumulativePutts.max(by: { $0.value < $1.value })?.key
             
             holeResults.append(CaraEPerroHoleResult(
                 hole: hole,
                 playerGrossScores: grossScores,
-                playerHolePoints: holePoints,
-                playerCumulativePoints: cumulativePoints
+                playerPutts: holePutts,
+                playerHolePoints: bonusPoints,
+                playerCumulativePoints: cumulativePoints,
+                playerCumulativePutts: cumulativePutts,
+                snakeHolder: snakeHolder
             ))
+        }
+        
+        // Calculate net scores for front and back nine
+        let frontNineWinner = calculateNineWinner(holes: frontNineHoles, input: input, tee: tee, handicapIndices: handicapIndices)
+        let backNineWinner = calculateNineWinner(holes: backNineHoles, input: input, tee: tee, handicapIndices: handicapIndices)
+        
+        // Award 1 point to front nine winner
+        if let winner = frontNineWinner {
+            cumulativePoints[winner, default: 0] += 1
+        }
+        
+        // Award 1 point to back nine winner
+        if let winner = backNineWinner {
+            cumulativePoints[winner, default: 0] += 1
+        }
+        
+        // Determine final snake holder
+        let finalSnakeHolder = cumulativePutts.max(by: { $0.value < $1.value })?.key
+        
+        // Snake penalty: player with most putts gives 1 point to all other players
+        if let snakePlayer = finalSnakeHolder {
+            for player in input.players where player.id != snakePlayer {
+                cumulativePoints[player.id, default: 0] += 1
+            }
         }
         
         return CaraEPerroResult(
             playerCumulativePoints: cumulativePoints,
             holeResults: holeResults,
-            playerHandicapIndices: handicapIndices
+            playerHandicapIndices: handicapIndices,
+            playerTotalPutts: cumulativePutts,
+            finalSnakeHolder: finalSnakeHolder,
+            frontNineWinner: frontNineWinner,
+            backNineWinner: backNineWinner
         )
     }
     
@@ -175,5 +235,55 @@ struct CaraEPerroCalculator {
     /// Create a unique key for a pair of players
     private static func pairKey(_ player1: UUID, _ player2: UUID) -> String {
         "\(player1.uuidString)-\(player2.uuidString)"
+    }
+    
+    /// Calculate the winner of a nine-hole segment based on NET score
+    private static func calculateNineWinner(
+        holes: [HoleDefinition],
+        input: CalculationInput,
+        tee: Tee,
+        handicapIndices: [UUID: Int]
+    ) -> UUID? {
+        guard !holes.isEmpty else { return nil }
+        
+        var netScores: [UUID: Int] = [:]
+        
+        for player in input.players {
+            var totalGross = 0
+            var holesPlayed = 0
+            
+            for hole in holes {
+                if let score = input.score(playerID: player.id, holeID: hole.id), score > 0 {
+                    totalGross += score
+                    holesPlayed += 1
+                }
+            }
+            
+            // Only count players who played all holes
+            if holesPlayed == holes.count {
+                let hcp = handicapIndices[player.id] ?? 0
+                
+                // Calculate handicap strokes for these holes
+                // Count how many holes the player gets strokes on based on stroke index
+                var handicapStrokes = 0
+                for hole in holes {
+                    if hole.strokeIndex <= hcp {
+                        handicapStrokes += 1
+                    }
+                }
+                
+                let netScore = totalGross - handicapStrokes
+                netScores[player.id] = netScore
+            }
+        }
+        
+        // Find the lowest net score
+        guard let winner = netScores.min(by: { $0.value < $1.value }) else { return nil }
+        
+        // Check for ties (return nil if tied)
+        let lowestScore = winner.value
+        let playersWithLowestScore = netScores.filter { $0.value == lowestScore }
+        
+        return playersWithLowestScore.count == 1 ? winner.key : nil
     }
 }
