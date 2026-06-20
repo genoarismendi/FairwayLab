@@ -160,7 +160,7 @@ Points per hole based on score relative to par (net or gross):
 File: `DomainServicesCaraEPerroCalculator.swift`
 
 ### Game concept
-Each player competes against every other player on every hole (pairwise comparison). There is no global score: points emerge from one-on-one matchups. The sum of all players' points on any hole is always **zero** — this is a zero-sum game.
+Each player competes against every other player on every hole (pairwise comparison). There is no global score: points emerge from one-on-one matchups. The pairwise points on any hole always sum to **zero**. Additional bonuses and penalties (zero putts, nine-hole winners, snake) are layered on top and break the zero-sum for the round total — this is intentional.
 
 ### Step 1 — Handicap rounding
 Each player's handicap (`Double`) is rounded to the nearest integer **before** any calculation.
@@ -200,8 +200,31 @@ if adjustedScore_i > adjustedScore_j:   player j wins → j +1, i -1
 if adjustedScore_i == adjustedScore_j:  tie → both 0
 ```
 
-### Step 4 — Accumulation
-Points from each hole are added to the running total. The final result (`playerCumulativePoints`) is the sum across all holes.
+### Step 4 — Zero Putts Bonus (per hole)
+After the pairwise comparison on each hole, any player who recorded **0 putts** (and has a valid score > 0) earns **+1 point**. This bonus is added to their hole points and running cumulative. Multiple players can earn this on the same hole.
+
+### Step 5 — Accumulation
+Pairwise points + zero-putts bonuses accumulate hole by hole into `playerCumulativePoints` stored inside each `CaraEPerroHoleResult`. These mid-round running totals do NOT yet include the end-of-round bonuses below.
+
+### Step 6 — Nine-hole winner bonuses (end of round)
+After all holes are processed, net scores are computed for the front nine (holes 1–9) and back nine (holes 10–18) separately.
+
+- Net scoring uses `HandicapCalculator.calculatePlayingHandicaps` (slope/rating formula) with the round's `handicapMode`.
+- The player with the **lowest net score** on each nine earns **+1 point**.
+- If tied, no bonus is awarded for that nine.
+- For 9-hole rounds, only the applicable nine is evaluated.
+
+### Step 7 — Snake penalty (end of round)
+The player(s) with the most **total putts** across the entire round must give **1 point to every other player**.
+
+- Net effect per snake holder: `-(N-1)` where N = total players (each gives 1 to every other).
+- Net effect per non-snake player: `+1` per snake holder in the group.
+- If multiple players tie for most putts, each of them pays all others (they cancel out among themselves).
+- If no putts were recorded by anyone (`maxPutts == 0`), no snake penalty is applied.
+- Snake is determined at **end of round** for the results view, but the 🐍 emoji updates in **real-time** during score entry (player with current most putts).
+
+### Step 8 — Final cumulative
+Front/back bonuses and snake penalties are applied to the running `playerCumulativePoints` from Step 5. The result stored in `CaraEPerroResult.playerCumulativePoints` is the final complete score.
 
 ---
 
@@ -246,11 +269,13 @@ Points from each hole are added to the running total. The final result (`playerC
 
 ### Invariants that must always hold
 
-1. **Zero sum:** the sum of `playerHolePoints.values` on any hole must always be 0.
+1. **Pairwise zero sum per hole:** the sum of **pairwise** points (`calculatePairwisePoints`) on any hole is always 0. Zero-putts bonuses are added after and do not violate this.
 2. **Valid stroke index:** each hole's stroke index must be a permutation of `1...N`. `RoundDefinition.isStrokeIndexValid()` enforces this before play starts.
-3. **Stroke goes to the LOWER handicap player** — not the higher one. The code enforces this with `if hcp1 < hcp2 { adjustedStrokes1 += 1 }`.
+3. **Stroke goes to the LOWER handicap player** — not the higher one. The code enforces this with `if hcp1 < hcp2 { adj1 += 1 }`.
 4. **Inclusive condition:** `delta >= strokeIndex`, not `>`. When delta equals the SI, the stroke does apply.
-5. **Rounded handicaps:** always use `handicapIndices` (Int), never `player.handicap` (Double) inside the calculation.
+5. **Rounded handicaps:** always use `handicapIndices` (Int), never `player.handicap` (Double) inside the pairwise calculation.
+6. **Snake requires putts > 0:** if nobody recorded any putts, no snake penalty is applied. Guard: `maxPutts > 0`.
+7. **Nine-hole bonus requires all holes scored:** a player is only eligible for the front/back nine bonus if they have a valid score on every hole of that nine.
 
 ---
 
@@ -264,6 +289,58 @@ File: `FairwayLabUITests/TestsCaraEPerroCalculatorTests.swift`
 | `testCaraEPerroTwoPlayersWithStroke` | 2 players, delta>=SI, better player receives stroke and loses |
 | `testCaraEPerroTwoPlayersNoStroke` | 2 players, delta<SI, no stroke, better player wins outright |
 | `testCaraEPerroCumulativeScoring` | 2 players, 2 holes, both tie on both holes |
+
+---
+
+## Score Entry UI
+
+File: `UIViewsPlayRoundPlayView.swift`
+
+### Input controls
+Scores are entered via **wheel pickers** (`.pickerStyle(.wheel)`), not text fields.
+
+| Field | Range | "Not set" value | Width |
+|-------|-------|-----------------|-------|
+| Strokes | 1–15 | `0` → displayed as "—" | 80 pt |
+| Putts | 0–8 | `-1` → displayed as "—" | 60 pt |
+
+The picker bindings map nil state to sentinel values (`0` for strokes, `-1` for putts) so the pickers always have a valid selection. Storing `0` or `-1` back to `RoundState` is converted back to `nil`.
+
+### Real-time visual indicators (during score entry)
+
+**🐍 Snake indicator**
+Shown next to the player name who currently has the **most total putts** across all scored holes. Updates live as putts are entered. Only shown if that player has > 0 putts.
+
+**🐷 / 🐷🐷 Pig indicator**
+- `🐷` — shown once all holes of a nine are scored and the player made **no par or better** on any hole of that nine.
+- `🐷🐷` — same condition met on both nines.
+- Evaluated independently per nine: front nine (holes 1–9) and back nine (holes 10–18).
+- Only appears once that entire nine is fully scored (all holes have gross scores entered).
+- Uses gross scores vs par, not net.
+
+---
+
+## Data Persistence
+
+File: `AppState.swift`, `GolfXApp.swift`
+
+State is saved to `UserDefaults` as JSON-encoded data. Three keys:
+
+| Key | Type | When saved |
+|-----|------|------------|
+| `fairwaylab.roundDefinition` | `RoundDefinition` | On setup, on end round |
+| `fairwaylab.roundState` | `RoundState` | On score commit, on app background |
+| `fairwaylab.lastValidRoundDefinition` | `RoundDefinition` | On setup |
+
+**Auto-load:** `AppState.init()` reads all three keys from UserDefaults on launch. If a round was in progress, `continueRound()` returns true and the "Continue Round" button appears on the home screen.
+
+**Auto-save triggers:**
+- `AppState.finalizeSetup()` — when the round is configured and started
+- `RoundPlayView.commitState()` — when navigating away from score entry or pressing "Calculate Results"
+- `GolfXApp` `.onChange(of: scenePhase)` — whenever the app moves to `.background`
+- `AppState.endRound()` — clears both `roundDefinition` and `roundState` from UserDefaults
+
+**End round:** calling `endRound()` clears the active round from memory AND from UserDefaults, so there's no stale round on next launch.
 
 ---
 
