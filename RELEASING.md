@@ -94,3 +94,22 @@ Go to [appstoreconnect.apple.com](https://appstoreconnect.apple.com):
 | Build rejected — duplicate build number | Increment the Build number and re-archive |
 | Build stuck on "Processing" | Normal, wait up to 15 min. Check email for error notification |
 | Testers don't see the new build | Make sure you clicked "Enable for Internal Testing" on the specific build |
+| PLA Update / "agree to Program License Agreement" | Sign in at developer.apple.com/account and accept the updated agreement. Also check appstoreconnect.apple.com for a second agreement banner. |
+| No signing certificate "iOS Distribution" found | See below |
+
+### Fixing "No iOS Distribution certificate"
+
+**Option A — Let Xcode handle it (recommended):**
+1. Project Navigator → FairwayLab project → FairwayLab target → **Signing & Capabilities**
+2. Check **"Automatically manage signing"**
+3. Set **Team** to your account
+4. Xcode will show a **"Repair"** button — click it to create and install the certificate automatically
+5. Re-archive
+
+**Option B — Create it manually (if Option A fails):**
+1. Open **Keychain Access** → menu **Keychain Access → Certificate Assistant → Request a Certificate from a Certificate Authority**
+2. Fill in your email, select "Saved to disk", save the `.certSigningRequest` file
+3. Go to [developer.apple.com/account/resources/certificates](https://developer.apple.com/account/resources/certificates) → **+**
+4. Choose **Apple Distribution** → upload the `.certSigningRequest` file
+5. Download the resulting `.cer` file → double-click to install in Keychain
+6. Re-archive in Xcode
