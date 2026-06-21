@@ -26,9 +26,6 @@ struct PlayersSetupView: View {
                 ForEach(Array(viewModel.players.enumerated()), id: \.element.id) { index, player in
                     PlayerRow(player: player, index: index, viewModel: viewModel)
                 }
-                .onDelete { indexSet in
-                    indexSet.forEach { viewModel.removePlayer(at: $0) }
-                }
             }
             
             Button(action: {
@@ -72,16 +69,27 @@ struct PlayerRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            TextField("Player Name", text: $name)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: name) { _, newValue in
-                    updatePlayer()
+            HStack {
+                TextField("Player Name", text: $name)
+                    .textFieldStyle(.roundedBorder)
+                    .onChange(of: name) { _, newValue in
+                        updatePlayer()
+                    }
+
+                if index >= 2 {
+                    Button(role: .destructive) {
+                        viewModel.removePlayer(at: index)
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.borderless)
                 }
-            
+            }
+
             HStack {
                 Text("Handicap:")
                     .foregroundStyle(.secondary)
-                
+
                 TextField("0.0", value: $handicap, format: .number)
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
@@ -89,7 +97,7 @@ struct PlayerRow: View {
                     .onChange(of: handicap) { _, _ in
                         updatePlayer()
                     }
-                
+
                 Stepper("", value: $handicap, in: 0...54, step: 0.5)
                     .labelsHidden()
                     .onChange(of: handicap) { _, _ in

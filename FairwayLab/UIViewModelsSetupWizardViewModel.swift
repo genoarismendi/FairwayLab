@@ -29,10 +29,9 @@ class SetupWizardViewModel: ObservableObject {
     @Published var handicapMode: HandicapMode = .relativeToLowest
     
     init() {
-        // Add default players for easier testing
         self.players = [
-            Player(name: "", handicap: 10),
-            Player(name: "", handicap: 15)
+            Player(name: "Player 1", handicap: 10),
+            Player(name: "Player 2", handicap: 15)
         ]
     }
     
@@ -78,7 +77,8 @@ class SetupWizardViewModel: ObservableObject {
     // MARK: - Actions
     
     func addPlayer() {
-        players.append(Player(name: "", handicap: 18))
+        let number = players.count + 1
+        players.append(Player(name: "Player \(number)", handicap: 18))
     }
     
     func removePlayer(at index: Int) {
