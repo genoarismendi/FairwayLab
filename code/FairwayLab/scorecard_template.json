@@ -1,0 +1,60 @@
+{
+  "_comment": "Template for creating test scorecard data",
+  "name": "Your Test Name Here",
+  "description": "Description of what this test validates",
+  "players": [
+    { "name": "Player1", "handicap": 10.0 },
+    { "name": "Player2", "handicap": 15.0 }
+  ],
+  "course": {
+    "name": "Course Name",
+    "location": "City, State"
+  },
+  "tee": {
+    "name": "Tee Color/Name",
+    "courseRating": 72.0,
+    "slope": 113,
+    "pars": [4, 4, 3, 5, 4, 4, 3, 5, 4],
+    "yardages": [400, 380, 180, 520, 410, 390, 170, 530, 400],
+    "strokeIndices": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  },
+  "isNineHole": true,
+  "isBackNine": false,
+  "selectedGames": ["stableford", "skins", "caraEPerro", "nassau", "kp"],
+  "handicapMode": "absolute",
+  "_handicapModeOptions": ["absolute", "relativeToLowest"],
+  "scores": {
+    "Player1": {
+      "1": 4,
+      "2": 5,
+      "3": 3,
+      "4": 6,
+      "5": 4,
+      "6": 4,
+      "7": 3,
+      "8": 5,
+      "9": 4
+    },
+    "Player2": {
+      "1": 5,
+      "2": 5,
+      "3": 4,
+      "4": 6,
+      "5": 5,
+      "6": 5,
+      "7": 4,
+      "8": 6,
+      "9": 5
+    }
+  },
+  "putts": {
+    "_comment": "Optional - omit entirely if not testing putts",
+    "Player1": { "1": 2, "2": 2, "3": 1, "4": 2, "5": 2, "6": 2, "7": 2, "8": 2, "9": 2 },
+    "Player2": { "1": 2, "2": 2, "3": 2, "4": 2, "5": 2, "6": 2, "7": 2, "8": 2, "9": 2 }
+  },
+  "kpWinners": {
+    "_comment": "Optional - hole number to player name mapping for KP (closest to pin)",
+    "3": "Player1",
+    "7": "Player2"
+  }
+}
