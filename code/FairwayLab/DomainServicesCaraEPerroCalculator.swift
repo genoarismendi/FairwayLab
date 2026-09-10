@@ -2,17 +2,19 @@
 //  CaraEPerroCalculator.swift
 //  FairwayLab
 //
-//  Cara 'e Perro pairwise comparison game calculator.
+//  Cara 'e Perro pairwise comparison game calculator with ZERO-SUM bonuses/penalties.
 //
-//  Core algorithm (unchanged): each player competes against every other player
-//  on every hole. Points are awarded from head-to-head matchups with handicap
-//  adjustments. The sum of pairwise points on any hole is always zero.
+//  Core algorithm: each player competes against every other player on every hole.
+//  Points are awarded from head-to-head matchups with handicap adjustments.
+//  The sum of pairwise points on any hole is always zero.
 //
-//  Additional bonuses applied on top of pairwise points:
-//    • Zero Putts (+1 per hole where a player records 0 putts)
-//    • Front Nine Winner (+1 to player with lowest net score on holes 1-9)
-//    • Back Nine Winner  (+1 to player with lowest net score on holes 10-18)
-//    • Snake Penalty     (player with most total putts gives 1 point to every other player)
+//  Additional bonuses/penalties (ALL ZERO-SUM, INTEGER ONLY):
+//    • Zero Putts: Each 0-putt player gets 1 from each non-zero-putt player per hole
+//    • Front Nine Winner: Winner gets +(N-1), losers pay -1 each
+//    • Back Nine Winner: Winner gets +(N-1), losers pay -1 each  
+//    • Snake Penalty (PER-NINE): Most putts on THAT nine pays 1 to each other player
+//
+//  All point calculations maintain strict zero-sum: sum of all points = 0.
 
 import Foundation
 
@@ -20,8 +22,8 @@ struct CaraEPerroHoleResult: Codable {
     let hole: HoleDefinition
     let playerGrossScores: [UUID: Int]
     let playerHolePoints: [UUID: Int]          // Pairwise points + zero-putts bonus for this hole
-    let playerCumulativePoints: [UUID: Int]    // Running total through this hole (excludes end-of-round bonuses)
-    let zeroPuttsBonusPlayers: [UUID]          // Players who earned +1 zero-putts bonus on this hole
+    let playerCumulativePoints: [UUID: Int]    // Running total through this hole (excludes end-of-nine bonuses)
+    let zeroPuttsBonusPlayers: [UUID]          // Players who earned zero-putts bonus on this hole
 }
 
 struct CaraEPerroResult: Codable {
@@ -29,14 +31,18 @@ struct CaraEPerroResult: Codable {
     let holeResults: [CaraEPerroHoleResult]
     let playerHandicapIndices: [UUID: Int]     // Rounded handicaps used in pairwise calculation
     // Bonus / penalty breakdown (for display in results view)
-    let totalPutts: [UUID: Int]
-    let snakePlayerIDs: [UUID]
-    let snakePenaltyByPlayer: [UUID: Int]      // Negative = paid out, positive = received
+    let totalPutts: [UUID: Int]                // Total putts across entire round (for display)
+    let frontNinePutts: [UUID: Int]            // Putts on holes 1-9
+    let backNinePutts: [UUID: Int]             // Putts on holes 10-18
+    let frontNineSnakePlayerIDs: [UUID]        // Snake holders for front nine
+    let backNineSnakePlayerIDs: [UUID]         // Snake holders for back nine
+    let frontNineSnakePenaltyByPlayer: [UUID: Int]  // Front nine snake penalties
+    let backNineSnakePenaltyByPlayer: [UUID: Int]   // Back nine snake penalties
     let frontNineWinnerID: UUID?
     let backNineWinnerID: UUID?
     let zeroPuttsBonusByPlayer: [UUID: Int]    // Total zero-putts bonuses earned across the round
-    let frontNineBonusByPlayer: [UUID: Int]    // 0 or 1 per player
-    let backNineBonusByPlayer: [UUID: Int]     // 0 or 1 per player
+    let frontNineBonusByPlayer: [UUID: Int]    // 0 or +(N-1) per player
+    let backNineBonusByPlayer: [UUID: Int]     // 0 or +(N-1) per player
 
     func totalPoints(for playerID: UUID) -> Int {
         playerCumulativePoints[playerID] ?? 0
@@ -59,15 +65,25 @@ struct CaraEPerroCalculator {
         // MARK: - Step 2: Precompute handicap deltas for every unique pair
         let handicapDeltas = computeHandicapDeltas(players: input.players, handicapIndices: handicapIndices)
 
-        // MARK: - Step 3: Sum total putts per player (used for snake at end)
+        // MARK: - Step 3: Sum putts per nine (used for snake penalties)
         var totalPutts: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
+        var frontNinePutts: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
+        var backNinePutts: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
+        
         for player in input.players {
             for hole in input.holes {
-                totalPutts[player.id, default: 0] += input.puttCount(playerID: player.id, holeID: hole.id) ?? 0
+                let putts = input.puttCount(playerID: player.id, holeID: hole.id) ?? 0
+                totalPutts[player.id, default: 0] += putts
+                
+                if hole.actualHoleNumber <= 9 {
+                    frontNinePutts[player.id, default: 0] += putts
+                } else {
+                    backNinePutts[player.id, default: 0] += putts
+                }
             }
         }
 
-        // MARK: - Step 4: Hole-by-hole pairwise points + zero-putts bonus
+        // MARK: - Step 4: Hole-by-hole pairwise points + zero-putts bonus (ZERO-SUM)
         var holeResults: [CaraEPerroHoleResult] = []
         var cumulativePoints: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
         var zeroPuttsBonusByPlayer: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
@@ -81,17 +97,36 @@ struct CaraEPerroCalculator {
                 handicapDeltas: handicapDeltas
             )
 
-            // Zero-putts bonus: +1 for any player who holed out with 0 putts
+            // Zero-putts bonus: ZERO-SUM - each zero-putts player gets 1 from each non-zero-putts player
             var zeroPuttsBonusPlayers: [UUID] = []
-            for player in input.players {
-                guard let score = input.score(playerID: player.id, holeID: hole.id), score > 0 else { continue }
-                guard let p = input.puttCount(playerID: player.id, holeID: hole.id), p == 0 else { continue }
-                holePoints[player.id, default: 0] += 1
-                zeroPuttsBonusByPlayer[player.id, default: 0] += 1
-                zeroPuttsBonusPlayers.append(player.id)
+            let playersWithZeroPutts = input.players.filter {
+                guard let score = input.score(playerID: $0.id, holeID: hole.id), score > 0 else { return false }
+                guard let p = input.puttCount(playerID: $0.id, holeID: hole.id) else { return false }
+                return p == 0
+            }
+            
+            let playersWithoutZeroPutts = input.players.filter { player in
+                !playersWithZeroPutts.contains(where: { $0.id == player.id })
+            }
+            
+            let numZeroPutts = playersWithZeroPutts.count
+            let numNonZeroPutts = playersWithoutZeroPutts.count
+            
+            if numZeroPutts > 0 && numNonZeroPutts > 0 {
+                // Each zero-putts player receives numNonZeroPutts points
+                for player in playersWithZeroPutts {
+                    holePoints[player.id, default: 0] += numNonZeroPutts
+                    zeroPuttsBonusByPlayer[player.id, default: 0] += numNonZeroPutts
+                    zeroPuttsBonusPlayers.append(player.id)
+                }
+                
+                // Each non-zero-putts player pays numZeroPutts points
+                for player in playersWithoutZeroPutts {
+                    holePoints[player.id, default: 0] -= numZeroPutts
+                }
             }
 
-            // Update running cumulative (does NOT yet include end-of-round bonuses)
+            // Update running cumulative (does NOT yet include end-of-nine bonuses)
             for playerID in holePoints.keys {
                 cumulativePoints[playerID, default: 0] += holePoints[playerID] ?? 0
             }
@@ -112,7 +147,7 @@ struct CaraEPerroCalculator {
             ))
         }
 
-        // MARK: - Step 5: Front nine / back nine winner bonus
+        // MARK: - Step 5: Front nine / back nine winner bonus (ZERO-SUM)
         let frontNineHoles = input.holes.filter { $0.actualHoleNumber <= 9 }
         let backNineHoles  = input.holes.filter { $0.actualHoleNumber > 9 }
 
@@ -130,27 +165,27 @@ struct CaraEPerroCalculator {
             cumulativePoints[playerID, default: 0] += bonus
         }
 
-        // MARK: - Step 6: Snake penalty
-        // Player(s) with the most total putts give 1 point to every other player.
-        let maxPutts = totalPutts.values.max() ?? 0
-        let snakePlayerIDs: [UUID]
-        var snakePenaltyByPlayer: [UUID: Int] = input.players.reduce(into: [:]) { $0[$1.id] = 0 }
-
-        if maxPutts > 0 {
-            snakePlayerIDs = input.players
-                .filter { totalPutts[$0.id] == maxPutts }
-                .map { $0.id }
-
-            for snakeID in snakePlayerIDs {
-                for player in input.players where player.id != snakeID {
-                    snakePenaltyByPlayer[snakeID, default: 0] -= 1
-                    snakePenaltyByPlayer[player.id, default: 0] += 1
-                    cumulativePoints[snakeID, default: 0] -= 1
-                    cumulativePoints[player.id, default: 0] += 1
-                }
-            }
-        } else {
-            snakePlayerIDs = []
+        // MARK: - Step 6: Snake penalty (ZERO-SUM, PER-NINE)
+        // Front nine snake (based only on holes 1-9 putts)
+        let (frontNineSnakeIDs, frontNineSnakePenalty) = computeSnakePenalty(
+            putts: frontNinePutts,
+            players: input.players
+        )
+        
+        // Back nine snake (based only on holes 10-18 putts)
+        let (backNineSnakeIDs, backNineSnakePenalty) = computeSnakePenalty(
+            putts: backNinePutts,
+            players: input.players
+        )
+        
+        // Apply front nine snake penalty
+        for (playerID, penalty) in frontNineSnakePenalty {
+            cumulativePoints[playerID, default: 0] += penalty
+        }
+        
+        // Apply back nine snake penalty
+        for (playerID, penalty) in backNineSnakePenalty {
+            cumulativePoints[playerID, default: 0] += penalty
         }
 
         return CaraEPerroResult(
@@ -158,8 +193,12 @@ struct CaraEPerroCalculator {
             holeResults: holeResults,
             playerHandicapIndices: handicapIndices,
             totalPutts: totalPutts,
-            snakePlayerIDs: snakePlayerIDs,
-            snakePenaltyByPlayer: snakePenaltyByPlayer,
+            frontNinePutts: frontNinePutts,
+            backNinePutts: backNinePutts,
+            frontNineSnakePlayerIDs: frontNineSnakeIDs,
+            backNineSnakePlayerIDs: backNineSnakeIDs,
+            frontNineSnakePenaltyByPlayer: frontNineSnakePenalty,
+            backNineSnakePenaltyByPlayer: backNineSnakePenalty,
             frontNineWinnerID: frontWinnerID,
             backNineWinnerID: backWinnerID,
             zeroPuttsBonusByPlayer: zeroPuttsBonusByPlayer,
@@ -231,10 +270,10 @@ struct CaraEPerroCalculator {
         return points
     }
 
-    // MARK: - Nine-hole net score winner
+    // MARK: - Nine-hole net score winner (ZERO-SUM)
 
-    /// Returns (winnerID, bonusByPlayer) where winnerID is the player with the
-    /// lowest net score on the provided holes. No bonus if tied or holes are empty.
+    /// Returns (winnerID, bonusByPlayer) where winner receives +(N-1) and each loser pays -1.
+    /// No bonus if tied or holes are empty.
     private static func computeNineWinnerBonus(
         input: CalculationInput,
         tee: Tee,
@@ -272,7 +311,56 @@ struct CaraEPerroCalculator {
         let winners = netScores.filter { $0.value == minScore }
         guard winners.count == 1, let winnerID = winners.first?.key else { return (nil, [:]) }
 
-        return (winnerID, [winnerID: 1])
+        // ZERO-SUM: Winner gets +(N-1), each non-winner pays -1
+        let numPlayers = input.players.count
+        var bonusByPlayer: [UUID: Int] = [:]
+        
+        bonusByPlayer[winnerID] = numPlayers - 1  // Winner gets from all others
+        
+        for player in input.players where player.id != winnerID {
+            bonusByPlayer[player.id] = -1  // Each loser pays 1
+        }
+
+        return (winnerID, bonusByPlayer)
+    }
+    
+    // MARK: - Snake penalty (ZERO-SUM, PER-NINE)
+    
+    /// Computes snake penalty for a single nine based on putts from that nine only.
+    /// Returns (snakePlayerIDs, penaltyByPlayer) where snakes pay -(N-numSnakes) and others receive +numSnakes.
+    private static func computeSnakePenalty(
+        putts: [UUID: Int],
+        players: [Player]
+    ) -> (snakePlayerIDs: [UUID], penaltyByPlayer: [UUID: Int]) {
+        let maxPutts = putts.values.max() ?? 0
+        
+        guard maxPutts > 0 else {
+            return ([], [:])  // No putts recorded, no penalty
+        }
+        
+        let snakePlayers = players.filter { putts[$0.id] == maxPutts }
+        let nonSnakePlayers = players.filter { putts[$0.id] != maxPutts }
+        
+        let numSnakes = snakePlayers.count
+        let numNonSnakes = nonSnakePlayers.count
+        
+        guard numNonSnakes > 0 else {
+            return ([], [:])  // All tied for most putts, no penalty
+        }
+        
+        var penaltyByPlayer: [UUID: Int] = [:]
+        
+        // Each snake pays numNonSnakes (one to each non-snake)
+        for snake in snakePlayers {
+            penaltyByPlayer[snake.id] = -numNonSnakes
+        }
+        
+        // Each non-snake receives numSnakes (one from each snake)
+        for nonSnake in nonSnakePlayers {
+            penaltyByPlayer[nonSnake.id] = numSnakes
+        }
+        
+        return (snakePlayers.map { $0.id }, penaltyByPlayer)
     }
 
     private static func pairKey(_ a: UUID, _ b: UUID) -> String {

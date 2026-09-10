@@ -1,6 +1,6 @@
 //
 //  CaraEPerroDetailView.swift
-//  GolfX
+//  FairwayLab
 //
 //  Detailed Cara 'e Perro results view with hole-by-hole breakdown
 //  and bonus/penalty summary.
@@ -13,11 +13,16 @@ struct CaraEPerroDetailView: View {
     let definition: RoundDefinition
 
     @State private var showHandicapDetails = false
+    
+    // Computed property: all snake players (front nine + back nine)
+    private var allSnakePlayers: Set<UUID> {
+        Set(result.frontNineSnakePlayerIDs + result.backNineSnakePlayerIDs)
+    }
 
     var body: some View {
         List {
             Section {
-                Text("Pairwise comparison game. Each player competes against every other player on each hole. Additional points for zero putts, nine-hole winners, and snake penalty.")
+                Text("Pairwise comparison game. Each player competes against every other player on each hole. Additional points for zero putts, nine-hole winners, and snake penalties.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -27,7 +32,7 @@ struct CaraEPerroDetailView: View {
                 ForEach(result.sortedPlayers(players: definition.players), id: \.0.id) { player, points in
                     HStack {
                         Text(player.name)
-                        if result.snakePlayerIDs.contains(player.id) {
+                        if allSnakePlayers.contains(player.id) {
                             Text("🐍")
                         }
                         Spacer()
@@ -65,12 +70,13 @@ struct CaraEPerroDetailView: View {
                 // Front nine winner
                 if let winnerID = result.frontNineWinnerID,
                    let winner = definition.players.first(where: { $0.id == winnerID }) {
+                    let bonus = result.frontNineBonusByPlayer[winnerID] ?? 0
                     HStack {
                         Text("Front Nine Winner")
                             .font(.subheadline)
                             .fontWeight(.semibold)
                         Spacer()
-                        Text("\(winner.name) +1")
+                        Text("\(winner.name) +\(bonus)")
                             .foregroundStyle(.green)
                             .font(.subheadline)
                     }
@@ -79,45 +85,78 @@ struct CaraEPerroDetailView: View {
                 // Back nine winner
                 if let winnerID = result.backNineWinnerID,
                    let winner = definition.players.first(where: { $0.id == winnerID }) {
+                    let bonus = result.backNineBonusByPlayer[winnerID] ?? 0
                     HStack {
                         Text("Back Nine Winner")
                             .font(.subheadline)
                             .fontWeight(.semibold)
                         Spacer()
-                        Text("\(winner.name) +1")
+                        Text("\(winner.name) +\(bonus)")
                             .foregroundStyle(.green)
                             .font(.subheadline)
                     }
                 }
 
-                // Snake
-                if !result.snakePlayerIDs.isEmpty {
+                // Front Nine Snake
+                if !result.frontNineSnakePlayerIDs.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Snake 🐍")
+                            Text("Front Nine Snake 🐍")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                             Spacer()
                         }
                         ForEach(definition.players) { player in
-                            let penalty = result.snakePenaltyByPlayer[player.id] ?? 0
-                            let putts = result.totalPutts[player.id] ?? 0
-                            let isSnake = result.snakePlayerIDs.contains(player.id)
-                            HStack {
-                                Text(player.name)
-                                if isSnake { Text("🐍") }
-                                Text("(\(putts) putts)")
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text(formatPoints(penalty))
-                                    .foregroundStyle(pointsColor(penalty))
+                            let penalty = result.frontNineSnakePenaltyByPlayer[player.id] ?? 0
+                            let putts = result.frontNinePutts[player.id] ?? 0
+                            let isSnake = result.frontNineSnakePlayerIDs.contains(player.id)
+                            if penalty != 0 {
+                                HStack {
+                                    Text(player.name)
+                                    if isSnake { Text("🐍") }
+                                    Text("(\(putts) putts)")
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text(formatPoints(penalty))
+                                        .foregroundStyle(pointsColor(penalty))
+                                }
+                                .font(.subheadline)
                             }
-                            .font(.subheadline)
+                        }
+                    }
+                }
+                
+                // Back Nine Snake
+                if !result.backNineSnakePlayerIDs.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Back Nine Snake 🐍")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                        ForEach(definition.players) { player in
+                            let penalty = result.backNineSnakePenaltyByPlayer[player.id] ?? 0
+                            let putts = result.backNinePutts[player.id] ?? 0
+                            let isSnake = result.backNineSnakePlayerIDs.contains(player.id)
+                            if penalty != 0 {
+                                HStack {
+                                    Text(player.name)
+                                    if isSnake { Text("🐍") }
+                                    Text("(\(putts) putts)")
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text(formatPoints(penalty))
+                                        .foregroundStyle(pointsColor(penalty))
+                                }
+                                .font(.subheadline)
+                            }
                         }
                     }
                 }
 
-                if result.snakePlayerIDs.isEmpty
+                if result.frontNineSnakePlayerIDs.isEmpty
+                    && result.backNineSnakePlayerIDs.isEmpty
                     && result.frontNineWinnerID == nil
                     && result.backNineWinnerID == nil
                     && zeroBonusPlayers.isEmpty {
