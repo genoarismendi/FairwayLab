@@ -10,8 +10,8 @@
 //
 //  Additional bonuses/penalties (ALL ZERO-SUM, INTEGER ONLY):
 //    • Zero Putts: Each 0-putt player gets 1 from each non-zero-putt player per hole
-//    • Front Nine Winner: Winner gets +(N-1), losers pay -1 each
-//    • Back Nine Winner: Winner gets +(N-1), losers pay -1 each  
+//    • Front Nine Winner: Each winner gets +(N-numWinners) from non-winners (ties supported)
+//    • Back Nine Winner: Each winner gets +(N-numWinners) from non-winners (ties supported)
 //    • Snake Penalty (PER-NINE): Most putts on THAT nine pays 1 to each other player
 //
 //  All point calculations maintain strict zero-sum: sum of all points = 0.
@@ -41,8 +41,8 @@ struct CaraEPerroResult: Codable {
     let frontNineWinnerID: UUID?
     let backNineWinnerID: UUID?
     let zeroPuttsBonusByPlayer: [UUID: Int]    // Total zero-putts bonuses earned across the round
-    let frontNineBonusByPlayer: [UUID: Int]    // 0 or +(N-1) per player
-    let backNineBonusByPlayer: [UUID: Int]     // 0 or +(N-1) per player
+    let frontNineBonusByPlayer: [UUID: Int]    // 0 or +(N-numWinners) per player
+    let backNineBonusByPlayer: [UUID: Int]     // 0 or +(N-numWinners) per player
 
     func totalPoints(for playerID: UUID) -> Int {
         playerCumulativePoints[playerID] ?? 0
@@ -147,7 +147,7 @@ struct CaraEPerroCalculator {
             ))
         }
 
-        // MARK: - Step 5: Front nine / back nine winner bonus (ZERO-SUM)
+        // MARK: - Step 5: Front nine / back nine winner bonus (ZERO-SUM, MULTIPLE WINNERS SUPPORTED)
         let frontNineHoles = input.holes.filter { $0.actualHoleNumber <= 9 }
         let backNineHoles  = input.holes.filter { $0.actualHoleNumber > 9 }
 
@@ -270,10 +270,10 @@ struct CaraEPerroCalculator {
         return points
     }
 
-    // MARK: - Nine-hole net score winner (ZERO-SUM)
+    // MARK: - Nine-hole net score winner (ZERO-SUM, MULTIPLE WINNERS SUPPORTED)
 
-    /// Returns (winnerID, bonusByPlayer) where winner receives +(N-1) and each loser pays -1.
-    /// No bonus if tied or holes are empty.
+    /// Returns (winnerID, bonusByPlayer) where winners receive +(num non-winners) and non-winners pay -(num winners).
+    /// Supports multiple winners if tied. No bonus if all players tie.
     private static func computeNineWinnerBonus(
         input: CalculationInput,
         tee: Tee,
@@ -308,20 +308,32 @@ struct CaraEPerroCalculator {
         }
 
         guard let minScore = netScores.values.min() else { return (nil, [:]) }
-        let winners = netScores.filter { $0.value == minScore }
-        guard winners.count == 1, let winnerID = winners.first?.key else { return (nil, [:]) }
-
-        // ZERO-SUM: Winner gets +(N-1), each non-winner pays -1
-        let numPlayers = input.players.count
+        let winnerIDs = netScores.filter { $0.value == minScore }.map { $0.key }
+        
+        guard !winnerIDs.isEmpty else { return (nil, [:]) }
+        
+        // ZERO-SUM: Each winner gets +(num non-winners), each non-winner pays -(num winners)
+        let numWinners = winnerIDs.count
+        let numNonWinners = input.players.count - numWinners
+        
+        guard numNonWinners > 0 else {
+            // All players tied - no bonus
+            return (winnerIDs.count == 1 ? winnerIDs.first : nil, [:])
+        }
+        
         var bonusByPlayer: [UUID: Int] = [:]
         
-        bonusByPlayer[winnerID] = numPlayers - 1  // Winner gets from all others
+        // Each winner receives numNonWinners points
+        for winnerID in winnerIDs {
+            bonusByPlayer[winnerID] = numNonWinners
+        }
         
-        for player in input.players where player.id != winnerID {
-            bonusByPlayer[player.id] = -1  // Each loser pays 1
+        // Each non-winner pays numWinners points
+        for player in input.players where !winnerIDs.contains(player.id) {
+            bonusByPlayer[player.id] = -numWinners
         }
 
-        return (winnerID, bonusByPlayer)
+        return (winnerIDs.count == 1 ? winnerIDs.first : nil, bonusByPlayer)
     }
     
     // MARK: - Snake penalty (ZERO-SUM, PER-NINE)
